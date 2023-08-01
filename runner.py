@@ -2,7 +2,7 @@
 
 __author__ = "Samet Tenekeci"
 __license__ = "MIT"
-__version__ = "28.07.2023"
+__version__ = "01.08.2023"
 __email__ = "samettenekeci@iyte.edu.tr"
 
 import os
@@ -156,6 +156,11 @@ def download_ensembl_data(
     waiting_sys_timer(wait)
     logging.info(driver.title)
 
+    logging.info("Closing agreement...")
+    results_button = driver.find_element(By.XPATH, "//a[@id='gdpr-agree']")
+    results_button.click()
+    waiting_sys_timer(wait)
+
     logging.info("Setting job name...")
     j_input = driver.find_element(By.XPATH, "//input[@id='BgjfIUsr_1']")
     j_input.send_keys(j)
@@ -186,19 +191,16 @@ def download_ensembl_data(
     m_input = driver.find_element(By.XPATH, "//input[@id='BgjfIUsr_12']")
     m_input.send_keys(m)
     waiting_sys_timer(wait)
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
     banner_element = driver.find_element(By.XPATH, "//div[@id='masthead']")
     banner_element.click()
     waiting_sys_timer(wait)
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
     logging.info("Setting population...")
     p_input = driver.find_element(By.XPATH, "//select[@id='BgjfIUsr_16']")
     p_select = Select(p_input)
     p_select.select_by_visible_text(p)
     waiting_sys_timer(wait)
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
     logging.info("Running...")
     run_button = driver.find_element(By.XPATH, "//input[@class='run_button fbutton']")
