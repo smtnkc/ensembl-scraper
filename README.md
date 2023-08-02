@@ -42,5 +42,10 @@ python runner.py \
         -f 'populations' \
         -m 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel' \
         -p 'CEU' \
-        -to '300'
+        -to 300
+```
+
+## Sample Run Command with Input File:
+```bash
+python runner.py -o 'downloads' -i 'inputs.csv' -to 300
 ```

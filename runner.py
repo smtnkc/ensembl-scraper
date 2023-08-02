@@ -2,7 +2,7 @@
 
 __author__ = "Samet Tenekeci"
 __license__ = "MIT"
-__version__ = "01.08.2023"
+__version__ = "02.08.2023"
 __email__ = "samettenekeci@iyte.edu.tr"
 
 import os
@@ -10,6 +10,7 @@ import time
 import sys
 import argparse as ap
 import logging
+import csv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
@@ -27,6 +28,10 @@ logging.basicConfig(
 def parse_params():
     p = ap.ArgumentParser(prog='ensembl_data_slicer.py',
                           description="Get a subset of data from a BAM or VCF file.")
+
+    p.add_argument('-i', '--inputcsv',
+                metavar='[STR]', type=str, required=False, default='inputs.csv',
+                help="Input CSV file")
 
     p.add_argument('-o', '--outdir',
                    metavar='[STR]', type=str, required=False, default='downloads/',
@@ -46,7 +51,7 @@ def parse_params():
 
     p.add_argument('-g', '--genotype',
                    metavar='[STR]', type=str, required=False,
-                   default='https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/ALL.chr1_GRCh38.genotypes.20170504.vcf.gz',
+                   default='https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/ALL.chr3_GRCh38.genotypes.20170504.vcf.gz',
                    help="Genotype file URL")
 
     p.add_argument('-f', '--filters',
@@ -111,7 +116,7 @@ def download_ensembl_data(
     ):
 
     # all arguments required
-    if not (o and j and ff and r and g and f and m and p):
+    if not (o and j and ff and r and g and f and m and p, to, open):
         logging.error("Missing argument.")
         sys.exit(1)
 
@@ -147,7 +152,7 @@ def download_ensembl_data(
     driver = webdriver.Firefox(service=service, options=options)
 
     # driverwait
-    driver.implicitly_wait(2)
+    driver.implicitly_wait(0)
     wait = WebDriverWait(driver, to)
 
     # open ENSEMBL
@@ -162,23 +167,23 @@ def download_ensembl_data(
     waiting_sys_timer(wait)
 
     logging.info("Setting job name...")
-    j_input = driver.find_element(By.XPATH, "//input[@id='BgjfIUsr_1']")
+    j_input = driver.find_element(By.XPATH, "//input[@name='name']")
     j_input.send_keys(j)
     waiting_sys_timer(wait)
 
     logging.info("Setting file format...")
-    ff_input = driver.find_element(By.XPATH, "//select[@id='BgjfIUsr_5']")
+    ff_input = driver.find_element(By.XPATH, "//select[@name='file_format']")
     ff_select = Select(ff_input)
     ff_select.select_by_visible_text(ff)
     waiting_sys_timer(wait)
 
     logging.info("Setting region lookup...")
-    r_input = driver.find_element(By.XPATH, "//input[@id='BgjfIUsr_6']")
+    r_input = driver.find_element(By.XPATH, "//input[@name='region']")
     r_input.send_keys(r)
     waiting_sys_timer(wait)
 
     logging.info("Setting genotype file URL...")
-    g_input = driver.find_element(By.XPATH, "//input[@id='BgjfIUsr_10']")
+    g_input = driver.find_element(By.XPATH, "//input[@name='custom_file_url']")
     g_input.send_keys(g)
     waiting_sys_timer(wait)
 
@@ -188,7 +193,7 @@ def download_ensembl_data(
     waiting_sys_timer(wait)
 
     logging.info("Setting sample-population mapping file URL...")
-    m_input = driver.find_element(By.XPATH, "//input[@id='BgjfIUsr_12']")
+    m_input = driver.find_element(By.XPATH, "//input[@name='custom_sample_url']")
     m_input.send_keys(m)
     waiting_sys_timer(wait)
 
@@ -197,7 +202,7 @@ def download_ensembl_data(
     waiting_sys_timer(wait)
 
     logging.info("Setting population...")
-    p_input = driver.find_element(By.XPATH, "//select[@id='BgjfIUsr_16']")
+    p_input = driver.find_element(By.XPATH, "//select[@name='custom_populations']")
     p_select = Select(p_input)
     p_select.select_by_visible_text(p)
     waiting_sys_timer(wait)
@@ -221,6 +226,7 @@ def download_ensembl_data(
 
     # close driver
     driver.quit()
+    logging.info("Completed.")
 
 
 def main():
@@ -228,19 +234,39 @@ def main():
 
     logging.info(f"ENSEMBL Data Slicer V{__version__}")
 
-    download_ensembl_data(
-        argvs.outdir,
-        argvs.jobname,
-        argvs.fileformat,
-        argvs.regionlookup,
-        argvs.genotype,
-        argvs.filters,
-        argvs.mapping,
-        argvs.populations,
-        argvs.timeout,
-        argvs.open
-    )
-    logging.info("Completed.")
+    if argvs.inputcsv:
+        logging.info("Reading input CSV file...")
+
+        with open(argvs.inputcsv, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                download_ensembl_data(
+                    argvs.outdir,
+                    row['jobname'],
+                    row['fileformat'],
+                    row['regionlookup'],
+                    row['genotype'],
+                    row['filters'],
+                    row['mapping'],
+                    row['populations'],
+                    argvs.timeout,
+                    open=False
+                )
+                print('*' * 50)
+
+    else:
+        download_ensembl_data(
+            argvs.outdir,
+            argvs.jobname,
+            argvs.fileformat,
+            argvs.regionlookup,
+            argvs.genotype,
+            argvs.filters,
+            argvs.mapping,
+            argvs.populations,
+            argvs.timeout,
+            argvs.open
+        )
 
 if __name__ == "__main__":
     main()

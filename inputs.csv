@@ -1,0 +1,3 @@
+jobname,fileformat,regionlookup,genotype,filters,mapping,populations
+J001,"VCF","3:146142335-146301179","https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/ALL.chr3_GRCh38.genotypes.20170504.vcf.gz","populations","https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel","CEU"
+J002,"VCF","3:146142335-146301179","https://ftp.ensembl.org/pub/data_files/homo_sapiens/GRCh38/variation_genotype/ALL.chr3_GRCh38.genotypes.20170504.vcf.gz","populations","https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel","CEU"
