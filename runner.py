@@ -2,7 +2,7 @@
 
 __author__ = "Samet Tenekeci"
 __license__ = "MIT"
-__version__ = "02.08.2023"
+__version__ = "03.08.2023"
 __email__ = "samettenekeci@iyte.edu.tr"
 
 import os
@@ -39,7 +39,7 @@ def parse_params():
 
     p.add_argument('-j', '--jobname',
                    metavar='[STR]', type=str, required=False, default=None,
-                   help="Name for this job (optional)")
+                   help="Name for this job")
 
     p.add_argument('-ff', '--fileformat',
                    metavar='[STR]', type=str, required=False, default='VCF',
@@ -118,6 +118,10 @@ def download_ensembl_data(
     # all arguments required
     if not (o and j and ff and r and g and f and m and p, to, open):
         logging.error("Missing argument.")
+        sys.exit(1)
+
+    if j[0] != 'J':
+        logging.error("Job name must start with 'J'.")
         sys.exit(1)
 
     # output directory
@@ -208,7 +212,7 @@ def download_ensembl_data(
     waiting_sys_timer(wait)
 
     logging.info("Running...")
-    run_button = driver.find_element(By.XPATH, "//input[@class='run_button fbutton']")
+    run_button = driver.find_element(By.XPATH, "//input[contains(@class, 'run_button')]")
     run_button.click()
     waiting_sys_timer(wait)
 
@@ -226,7 +230,23 @@ def download_ensembl_data(
 
     # close driver
     driver.quit()
-    logging.info("Completed.")
+
+
+def get_last_downloaded_file(directory):
+    # Get a list of all files in the directory along with their modification times
+    files = [(filename, os.path.getmtime(os.path.join(directory, filename))) for filename in os.listdir(directory)]
+
+    # Sort the files based on their modification times (most recent first)
+    files.sort(key=lambda x: x[1], reverse=True)
+
+    # Return the name of the most recently modified file (the last one in the sorted list)
+    return files[0][0] if files else None
+
+
+def rename_file(directory, last_downloaded_file, new_name):
+    old_file_path = os.path.join(directory, last_downloaded_file)
+    new_file_path = os.path.join(directory, new_name)
+    os.rename(old_file_path, new_file_path)
 
 
 def main():
@@ -252,6 +272,9 @@ def main():
                     argvs.timeout,
                     open=False
                 )
+                logging.info("Renaming the last downloaded file...")
+                last_downloaded_file = get_last_downloaded_file(argvs.outdir)
+                rename_file(argvs.outdir, last_downloaded_file, row['jobname'] + '.vcf.gz')
                 print('*' * 50)
 
     else:
@@ -267,6 +290,11 @@ def main():
             argvs.timeout,
             argvs.open
         )
+        logging.info("Renaming file...")
+        matching_files = get_last_downloaded_file(argvs.outdir)
+        rename_file(argvs.outdir, matching_files, argvs.jobname + '.vcf.gz')
+
+    logging.info("Completed.")
 
 if __name__ == "__main__":
     main()

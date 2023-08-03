@@ -31,6 +31,11 @@ python runner.py \
 
 You can also set ``--open`` to open Firefox Browser window.
 
+## Sample Run Command with an input file:
+```bash
+python runner.py -o 'downloads' -i 'inputs.csv' -to 300
+```
+
 ## Sample Run Command:
 ```bash
 python runner.py \
@@ -43,9 +48,4 @@ python runner.py \
         -m 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel' \
         -p 'CEU' \
         -to 300
-```
-
-## Sample Run Command with Input File:
-```bash
-python runner.py -o 'downloads' -i 'inputs.csv' -to 300
 ```
